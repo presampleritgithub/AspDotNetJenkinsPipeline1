@@ -1,19 +1,16 @@
+//def ReleaseDir = "c:\inetpub\wwwroot"
 pipeline {
-
-agent any
-
-  environment {
-    MSBUILD = "C:\\Program Files (x86)\\MSBuild\\14.0\\Bin\\MSBuild.exe"
-    CONFIG = "Release"
-    PLATFORM = '"Any CPU"'
-	NUGETPATH = "C:\\software\\nuget.exe"
-  }
-  stages {
-    stage('Build') {
-      steps {
-        bat "\"${NUGETPATH}\" restore AspDotNetJenkinsPipeline.sln"
-        bat "\"${MSBUILD}\" AspDotNetJenkinsPipeline.sln /p:Configuration=${env.CONFIG};Platform=${env.PLATFORM} /maxcpucount:%NUMBER_OF_PROCESSORS% /nodeReuse:false /p:OutputPath=C:\\test"
-      }
-    }
-  }
+			agent any
+			stages {
+				stage('Source'){
+					steps{
+						checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '825fc4d4-4161-4170-9587-28a936f82af6', url: 'http://172.30.11.178/abhishek1/aspdotnetjenkins']]])
+					}
+				}
+				stage('Build') {
+    					steps {
+    					    bat "\"${tool 'MSBuild'}\" AspDotNetJenkins.sln /p:DeployOnBuild=true /p:DeployDefaultTarget=WebPublish /p:WebPublishMethod=FileSystem /p:SkipInvalidConfigurations=true /t:build /p:Configuration=Release /p:Platform=\"Any CPU\" /p:DeleteExistingFiles=True /p:publishUrl=c:\\inetpub\\wwwroot"
+    					}
+				}
+			}
 }
